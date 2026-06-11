@@ -120,7 +120,7 @@ const AuthPage = () => {
                 <Sparkles className="w-4 h-4" /> Demo Login
               </p>
               <h1 className="text-3xl sm:text-4xl font-bold leading-tight">
-                ล็อคอินกับ Damo NongPlatoo.Ai
+                ล็อคอินกับ Demo NongPlatoo.Ai
               </h1>
               <p className="text-muted-foreground text-lg leading-relaxed">
                 ตัวอย่างหน้าระบบสมาชิกของ NongPlatoo.Ai สำหรับใช้สาธิตการออกแบบ

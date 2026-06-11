@@ -55,7 +55,7 @@ const Index = () => {
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto animate-fade-in">
             <h1 className="font-display text-4xl md:text-6xl lg:text-6xl font-bold text-primary-foreground mb-4 leading-tight">
-              <span className="block mb-3">Damo NongPlatoo.Ai</span>
+              <span className="block mb-3">Demo NongPlatoo.Ai</span>
               <span className="block text-golden">ผู้ช่วยประชาสัมพันธ์</span>
               <span className="block text-golden">การท่องเที่ยวอัจฉริยะ</span>
             </h1>
@@ -137,7 +137,7 @@ const Index = () => {
                 <MessageCircle className="w-8 h-8 text-primary-foreground" />
               </div>
               <h2 className="font-display text-2xl md:text-3xl font-bold text-primary-foreground mb-4">
-                พบกับ Damo NongPlatoo.Ai
+                พบกับ Demo NongPlatoo.Ai
               </h2>
               <p className="text-primary-foreground/80 text-lg mb-8 max-w-xl mx-auto">
                 ให้น้องปลาทูช่วยวางแผนเที่ยว ค้นหาที่กิน-ที่เที่ยวลับแบบรู้ใจ จัดทริปวันหยุดของคุณให้ง่ายและสนุกกว่าเดิม
@@ -161,7 +161,7 @@ const Index = () => {
       <footer className="py-8 bg-muted border-t border-border">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground text-sm">
-            © 2026 Damo NongPlatoo.Ai — เว็บไซต์สาธิตสำหรับการนำเสนอ
+            © 2026 Demo NongPlatoo.Ai — เว็บไซต์สาธิตสำหรับการนำเสนอ
           </p>
         </div>
       </footer>
