@@ -1,8 +1,6 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import { buildSystemPrompt } from "./knowledge";
-import { getMessagesBySessionId, saveMessage, getOrCreateSession, updateSessionTitle } from "./db";
-import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -17,7 +15,6 @@ const baseURL =
   process.env.DEEPSEEK_BASE_URL ||
   "https://openrouter.ai/api/v1";
 
-// Remove suffix like :batch if specified to ensure streaming compatibility
 const rawModel =
   process.env.OPENROUTER_MODEL ||
   process.env.DEEPSEEK_MODEL ||
@@ -40,42 +37,31 @@ const openaiClient = new OpenAI({
   },
 });
 
+export interface MessageInput {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface StreamChatParams {
-  sessionId: string;
   message: string;
+  history?: MessageInput[];
   placeContext?: string;
   onChunk: (chunk: string) => void;
   onError: (err: any) => void;
-  onDone: (fullText: string, messageId: string) => void;
+  onDone: (fullText: string) => void;
 }
 
 export const streamChatResponse = async ({
-  sessionId,
   message,
+  history = [],
   placeContext,
   onChunk,
   onError,
   onDone,
 }: StreamChatParams) => {
-  const userMsgId = uuidv4();
-  const assistantMsgId = uuidv4();
-
-  // Save user message to database
-  getOrCreateSession(sessionId);
-  saveMessage(userMsgId, sessionId, "user", message);
-
-  // Set session title from first user message if default
-  const history = getMessagesBySessionId(sessionId, 20);
-  if (history.length <= 2) {
-    const title = message.slice(0, 30) + (message.length > 30 ? "..." : "");
-    updateSessionTitle(sessionId, title);
-  }
-
-  // If no API key configured, provide a helpful intelligent fallback
   if (!isAIConfigured()) {
-    const fallbackReply = `สวัสดีค่ะ! น้องปลาทูได้รับข้อความแล้วนะคะ: "${message}"\n\n📌 **หมายเหตุสำหรับการเปิดใช้งาน AI Backend**:\nขณะนี้ระบบ Backend ยังไม่พบคีย์ในไฟล์ \`.env\` กรุณาระบุ \`OPENROUTER_API_KEY\` หรือ \`DEEPSEEK_API_KEY\` เพื่อเปิดใช้งานค่ะ 🐟✨`;
+    const fallbackReply = `สวัสดีค่ะ ยินดีต้อนรับสู่ระบบแนะนำการท่องเที่ยวสมุทรสงคราม\n\nหากท่านต้องการสอบถามข้อมูลสถานที่ท่องเที่ยว ร้านอาหาร หรือโรงแรมที่พักในสมุทรสงคราม กรุณาตั้งค่า API Key ในไฟล์ .env เพื่อเริ่มการสนทนาค่ะ`;
 
-    // Stream the fallback text smoothly
     let currentIdx = 0;
     const interval = setInterval(() => {
       if (currentIdx < fallbackReply.length) {
@@ -84,8 +70,7 @@ export const streamChatResponse = async ({
         onChunk(nextChunk);
       } else {
         clearInterval(interval);
-        saveMessage(assistantMsgId, sessionId, "assistant", fallbackReply);
-        onDone(fallbackReply, assistantMsgId);
+        onDone(fallbackReply);
       }
     }, 20);
     return;
@@ -94,23 +79,21 @@ export const streamChatResponse = async ({
   try {
     const systemPrompt = buildSystemPrompt(message, placeContext);
 
-    // Format chat history for AI Provider API
+    // Build message array for stateless request
     const apiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: "system", content: systemPrompt },
     ];
 
-    // Include recent history (excluding the current user message which is appended after)
-    const previousMessages = history.filter((m) => m.id !== userMsgId);
-    for (const m of previousMessages) {
-      if (m.role === "user" || m.role === "assistant") {
-        apiMessages.push({
-          role: m.role,
-          content: m.content,
-        });
-      }
+    // Append prior messages from current session memory sent by client (last 6 messages max)
+    const recentHistory = history.slice(-6);
+    for (const m of recentHistory) {
+      apiMessages.push({
+        role: m.role,
+        content: m.content,
+      });
     }
 
-    // Add current user message
+    // Add current user prompt
     apiMessages.push({
       role: "user",
       content: message,
@@ -121,7 +104,7 @@ export const streamChatResponse = async ({
       messages: apiMessages,
       stream: true,
       temperature: 0.7,
-      max_tokens: 2000,
+      max_tokens: 1500,
     });
 
     let fullText = "";
@@ -134,10 +117,9 @@ export const streamChatResponse = async ({
       }
     }
 
-    saveMessage(assistantMsgId, sessionId, "assistant", fullText);
-    onDone(fullText, assistantMsgId);
+    onDone(fullText);
   } catch (error: any) {
-    console.error("AI Provider API Error:", error);
+    console.error("AI API Error:", error);
     onError(error);
   }
 };

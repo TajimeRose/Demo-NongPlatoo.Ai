@@ -1,16 +1,10 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import {
-  listSessions,
-  getSession,
-  deleteSession,
-  getMessagesBySessionId,
-  getOrCreateSession,
-} from "./db";
+import path from "path";
+import fs from "fs";
 import { streamChatResponse, isAIConfigured, getModelName } from "./aiService";
 import { samutSongkhramKnowledge, searchKnowledge } from "./knowledge";
-import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -20,83 +14,40 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Health & Status check endpoint
+// Health check
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({
     status: "ok",
-    service: "NongPlatoo AI Chat Backend",
+    service: "NongPlatoo AI Travel Guide",
     isConfigured: isAIConfigured(),
     model: getModelName(),
   });
 });
 
-// List all chat sessions
-app.get("/api/sessions", (_req: Request, res: Response) => {
-  try {
-    const sessions = listSessions();
-    res.json(sessions);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch sessions" });
-  }
-});
-
-// Create a new session
-app.post("/api/sessions", (req: Request, res: Response) => {
-  try {
-    const sessionId = req.body.sessionId || uuidv4();
-    const title = req.body.title || "สนทนาใหม่";
-    const session = getOrCreateSession(sessionId, title);
-    res.json(session);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create session" });
-  }
-});
-
-// Get session details & messages
-app.get("/api/sessions/:sessionId/messages", (req: Request, res: Response) => {
-  try {
-    const { sessionId } = req.params;
-    const session = getSession(sessionId);
-    if (!session) {
-      return res.status(404).json({ error: "Session not found" });
-    }
-    const messages = getMessagesBySessionId(sessionId);
-    res.json({ session, messages });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch messages" });
-  }
-});
-
-// Delete a session
-app.delete("/api/sessions/:sessionId", (req: Request, res: Response) => {
-  try {
-    const { sessionId } = req.params;
-    deleteSession(sessionId);
-    res.json({ success: true, message: "Session deleted" });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to delete session" });
-  }
-});
-
-// Knowledge search endpoint
-app.get("/api/knowledge", (req: Request, res: Response) => {
+// Knowledge API
+app.get("/api/places", (req: Request, res: Response) => {
   const query = (req.query.q as string) || "";
-  if (query) {
-    res.json(searchKnowledge(query));
-  } else {
-    res.json(samutSongkhramKnowledge);
+  const category = (req.query.category as string) || "";
+  const top = req.query.top ? parseInt(req.query.top as string, 10) : undefined;
+
+  let results = searchKnowledge(query);
+  if (category) {
+    results = results.filter((p) => p.category === category);
   }
+  if (top && !isNaN(top)) {
+    results = results.sort((a, b) => b.popularScore - a.popularScore).slice(0, top);
+  }
+  res.json(results);
 });
 
 // SSE Streaming Chat Endpoint
 app.post("/api/chat/stream", async (req: Request, res: Response) => {
-  const { sessionId = uuidv4(), message, placeContext } = req.body;
+  const { message, history, placeContext } = req.body;
 
   if (!message || typeof message !== "string" || !message.trim()) {
     return res.status(400).json({ error: "Message is required" });
   }
 
-  // Set SSE Headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
@@ -107,11 +58,11 @@ app.post("/api/chat/stream", async (req: Request, res: Response) => {
   };
 
   try {
-    sendEvent("start", { sessionId });
+    sendEvent("start", { status: "ready" });
 
     await streamChatResponse({
-      sessionId,
       message: message.trim(),
+      history: Array.isArray(history) ? history : [],
       placeContext,
       onChunk: (chunk: string) => {
         sendEvent("chunk", { text: chunk });
@@ -120,20 +71,32 @@ app.post("/api/chat/stream", async (req: Request, res: Response) => {
         sendEvent("error", { message: err?.message || "Internal server error" });
         res.end();
       },
-      onDone: (fullText: string, messageId: string) => {
-        sendEvent("done", { fullText, messageId, sessionId });
+      onDone: (fullText: string) => {
+        sendEvent("done", { fullText });
         res.end();
       },
     });
   } catch (error: any) {
-    console.error("Stream endpoint error:", error);
+    console.error("Stream error:", error);
     sendEvent("error", { message: error?.message || "Failed to process chat" });
     res.end();
   }
 });
 
+// Serve frontend build in production on Render (Single Web Service mode)
+const distPath = path.resolve(process.cwd(), "dist");
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get("*", (req: Request, res: Response, next) => {
+    if (req.path.startsWith("/api")) {
+      return next();
+    }
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+}
+
 app.listen(PORT, () => {
-  console.log(`🚀 NongPlatoo AI Backend running on http://localhost:${PORT}`);
-  console.log(`🔑 AI Provider Configured: ${isAIConfigured()}`);
-  console.log(`🤖 Model: ${getModelName()}`);
+  console.log(`NongPlatoo AI Travel Guide running on port ${PORT}`);
+  console.log(`AI Configured: ${isAIConfigured()}`);
+  console.log(`Model: ${getModelName()}`);
 });

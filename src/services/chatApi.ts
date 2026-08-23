@@ -1,23 +1,13 @@
-export interface ChatSession {
-  id: string;
-  title: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface BackendMessage {
-  id: string;
-  session_id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  created_at: string;
-}
-
 export interface BackendHealth {
   status: string;
   service: string;
   isConfigured: boolean;
   model: string;
+}
+
+export interface ChatMessageItem {
+  role: "user" | "assistant";
+  content: string;
 }
 
 export const fetchBackendHealth = async (): Promise<BackendHealth | null> => {
@@ -30,53 +20,19 @@ export const fetchBackendHealth = async (): Promise<BackendHealth | null> => {
   }
 };
 
-export const fetchSessions = async (): Promise<ChatSession[]> => {
-  try {
-    const res = await fetch("/api/sessions");
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (err) {
-    console.error("Failed to fetch sessions:", err);
-    return [];
-  }
-};
-
-export const fetchSessionMessages = async (
-  sessionId: string
-): Promise<{ session: ChatSession; messages: BackendMessage[] } | null> => {
-  try {
-    const res = await fetch(`/api/sessions/${sessionId}/messages`);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.error("Failed to fetch session messages:", err);
-    return null;
-  }
-};
-
-export const deleteSession = async (sessionId: string): Promise<boolean> => {
-  try {
-    const res = await fetch(`/api/sessions/${sessionId}`, { method: "DELETE" });
-    return res.ok;
-  } catch (err) {
-    console.error("Failed to delete session:", err);
-    return false;
-  }
-};
-
 export interface StreamChatOptions {
-  sessionId: string;
   message: string;
+  history?: ChatMessageItem[];
   placeContext?: string;
   onStart?: () => void;
   onChunk: (chunk: string) => void;
-  onDone?: (fullText: string, messageId: string) => void;
+  onDone?: (fullText: string) => void;
   onError?: (err: Error) => void;
 }
 
 export const streamChatMessage = async ({
-  sessionId,
   message,
+  history = [],
   placeContext,
   onStart,
   onChunk,
@@ -90,8 +46,8 @@ export const streamChatMessage = async ({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sessionId,
         message,
+        history,
         placeContext,
       }),
     });
@@ -145,7 +101,7 @@ export const streamChatMessage = async ({
               onChunk(parsed.text);
             }
           } else if (eventType === "done") {
-            onDone?.(parsed.fullText || "", parsed.messageId || "");
+            onDone?.(parsed.fullText || "");
           } else if (eventType === "error") {
             onError?.(new Error(parsed.message || "Unknown error from server"));
           }
