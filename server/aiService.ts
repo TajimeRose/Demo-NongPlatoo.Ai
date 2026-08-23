@@ -104,7 +104,7 @@ export const streamChatResponse = async ({
       messages: apiMessages,
       stream: true,
       temperature: 0.7,
-      max_tokens: 1500,
+      max_tokens: 4000,
     });
 
     let fullText = "";
