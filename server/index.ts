@@ -87,7 +87,9 @@ app.post("/api/chat/stream", async (req: Request, res: Response) => {
 const distPath = path.resolve(process.cwd(), "dist");
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
-  app.get("*", (req: Request, res: Response, next) => {
+  
+  // Express 5 compatible catch-all middleware for SPA routing
+  app.use((req: Request, res: Response, next) => {
     if (req.path.startsWith("/api")) {
       return next();
     }
