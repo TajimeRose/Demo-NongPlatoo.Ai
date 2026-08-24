@@ -4,6 +4,7 @@ import {
   Bot,
   CheckCircle2,
   Mic,
+  MicOff,
   RotateCcw,
   Radio,
   Send,
@@ -55,6 +56,8 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState<string>("");
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   const getInitialMessage = (): Message => ({
     id: "welcome",
@@ -72,7 +75,79 @@ const Chat = () => {
     fetchBackendHealth().then((health) => {
       setBackendHealth(health);
     });
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
   }, []);
+
+  const toggleSpeechRecognition = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      toast({
+        title: "ไม่รองรับการพิมพ์ด้วยเสียง",
+        description: "เบราว์เซอร์ของคุณไม่รองรับ Web Speech API กรุณาใช้ Google Chrome หรือ Edge",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.lang = "th-TH";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast({
+          title: "กำลังฟังเสียง...",
+          description: "พูดเพื่อพิมพ์ข้อความลงในช่องแชทได้เลยค่ะ",
+        });
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0].transcript)
+          .join("");
+        setInput(transcript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        setIsListening(false);
+        if (event.error !== "no-speech" && event.error !== "aborted") {
+          toast({
+            title: "เกิดข้อผิดพลาดในการฟังเสียง",
+            description: `ข้อผิดพลาด: ${event.error}`,
+            variant: "destructive",
+          });
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error("Error starting speech recognition:", err);
+      setIsListening(false);
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -297,12 +372,13 @@ const Chat = () => {
           <div className="flex gap-3 items-center">
             <Button
               type="button"
-              variant="secondary"
+              variant={isListening ? "default" : "secondary"}
               size="icon"
-              onClick={() => showFeatureNotice("Voice to text")}
-              title="Voice to Text"
+              onClick={toggleSpeechRecognition}
+              title={isListening ? "กำลังฟัง... (คลิกเพื่อหยุด)" : "พิมพ์ด้วยเสียง (Voice Typing)"}
+              className={isListening ? "bg-red-500 hover:bg-red-600 text-white animate-pulse" : ""}
             >
-              <Mic className="w-5 h-5" />
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </Button>
             <Button
               type="button"
@@ -323,7 +399,7 @@ const Chat = () => {
                   handleSend();
                 }
               }}
-              placeholder="ถามเกี่ยวกับสถานที่ท่องเที่ยว ร้านอาหาร หรือโรงแรมในสมุทรสงคราม..."
+              placeholder={isListening ? "กำลังฟังเสียงของคุณ..." : "ถามเกี่ยวกับสถานที่ท่องเที่ยว ร้านอาหาร หรือโรงแรมในสมุทรสงคราม..."}
               className="flex-1 h-12 bg-background rounded-xl text-sm"
               disabled={isTyping}
             />
