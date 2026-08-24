@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import Navbar from "@/components/Navbar";
 import newsImage from "@/assets/news-maeklong.png";
 import marketImage from "@/assets/category-market.jpg";
-import templeImage from "@/assets/category-temple.jpg";
+import watBangKungImage from "@/assets/places/wat-bang-kung.jpg";
 import homestayImage from "@/assets/category-homestay.jpg";
 
 const demoNews = [
@@ -33,7 +33,7 @@ const demoNews = [
     title: "ไหว้พระวัดดัง เรียนรู้ประวัติศาสตร์สมุทรสงคราม",
     summary: "เส้นทางเที่ยววัดและแหล่งวัฒนธรรมที่เดินทางต่อกันได้ภายในหนึ่งวัน",
     category: "ข่าวท้องถิ่น",
-    image: templeImage,
+    image: watBangKungImage,
     date: "9 มิ.ย. 2569",
     views: 742,
   },
@@ -74,7 +74,6 @@ const News = () => {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               ข่าวสารและสภาพอากาศ
             </h1>
-            <Badge className="bg-golden text-primary">Demo Data</Badge>
           </div>
           <p className="text-muted-foreground">
             ตัวอย่างข่าวสารท้องถิ่นและข้อมูลสภาพอากาศ จังหวัดสมุทรสงคราม

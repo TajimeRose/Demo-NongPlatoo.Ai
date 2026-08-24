@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import CategoryCard from "@/components/CategoryCard";
 import heroImage from "@/assets/ปกเว็บ.jpg";
-import marketImage from "@/assets/category-market.jpg";
-import templeImage from "@/assets/category-temple.jpg";
-import homestayImage from "@/assets/category-homestay.jpg";
+import amphawaImage from "@/assets/places/amphawa-market.jpg";
+import watBangKungImage from "@/assets/places/wat-bang-kung.jpg";
+import baanRakImage from "@/assets/places/baan-rak-amphawa.jpg";
 import AgencyLogos from "@/components/AgencyLogos";
 import NewsBanner from "@/components/NewsBanner";
 
@@ -16,21 +16,21 @@ const Index = () => {
       title: "Floating Markets",
       titleTh: "ตลาดน้ำ",
       description: "เที่ยวตลาดน้ำอัมพวา ชิมอาหารทะเลสดและวิถีพายเรือเมืองแม่กลอง",
-      image: marketImage,
+      image: amphawaImage,
       category: "market",
     },
     {
       title: "Temples & Culture",
       titleTh: "วัดและวัฒนธรรม",
       description: "ไหว้พระริมน้ำ ชมวัดดังและวัฒนธรรมโบราณของสมุทรสงคราม",
-      image: templeImage,
+      image: watBangKungImage,
       category: "temple",
     },
     {
       title: "Homestays & Gardens",
       titleTh: "โฮมสเตย์และสวน",
       description: "พักโฮมสเตย์สวนมะพร้าว ริมคลองสงบใกล้กรุงเทพฯ",
-      image: homestayImage,
+      image: baanRakImage,
       category: "homestay",
     },
   ];
@@ -55,7 +55,7 @@ const Index = () => {
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto animate-fade-in">
             <h1 className="font-display text-4xl md:text-6xl lg:text-6xl font-bold text-primary-foreground mb-4 leading-tight">
-              <span className="block mb-3">Demo NongPlatoo.Ai</span>
+              <span className="block mb-3">NongPlatoo.Ai</span>
               <span className="block text-golden">ผู้ช่วยประชาสัมพันธ์</span>
               <span className="block text-golden">การท่องเที่ยวอัจฉริยะ</span>
             </h1>
@@ -137,7 +137,7 @@ const Index = () => {
                 <MessageCircle className="w-8 h-8 text-primary-foreground" />
               </div>
               <h2 className="font-display text-2xl md:text-3xl font-bold text-primary-foreground mb-4">
-                พบกับ Demo NongPlatoo.Ai
+                พบกับ NongPlatoo.Ai
               </h2>
               <p className="text-primary-foreground/80 text-lg mb-8 max-w-xl mx-auto">
                 ให้น้องปลาทูช่วยวางแผนเที่ยว ค้นหาที่กิน-ที่เที่ยวลับแบบรู้ใจ จัดทริปวันหยุดของคุณให้ง่ายและสนุกกว่าเดิม
@@ -161,7 +161,7 @@ const Index = () => {
       <footer className="py-8 bg-muted border-t border-border">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground text-sm">
-            © 2026 Demo NongPlatoo.Ai — เว็บไซต์สาธิตสำหรับการนำเสนอ
+            © 2026 NongPlatoo.Ai
           </p>
         </div>
       </footer>

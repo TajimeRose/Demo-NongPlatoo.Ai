@@ -33,7 +33,7 @@ const openaiClient = new OpenAI({
   baseURL: baseURL,
   defaultHeaders: {
     "HTTP-Referer": "http://localhost:8080",
-    "X-Title": "Demo NongPlatoo AI",
+    "X-Title": "NongPlatoo AI",
   },
 });
 

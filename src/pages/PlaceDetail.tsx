@@ -33,11 +33,8 @@ const PlaceDetail = () => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const place = id ? getPlaceById(id) : undefined;
 
-  const showDemoNotice = () => {
-    toast({
-      title: "โหมดสาธิต",
-      description: "ปุ่มเปิด Google Maps แสดงไว้สำหรับการนำเสนอเท่านั้น",
-    });
+  const showGoogleMaps = () => {
+    window.open(place.googleMapsUrl || `https://maps.google.com/?q=${place.latitude},${place.longitude}`, "_blank");
   };
 
   if (!place) {
@@ -78,7 +75,6 @@ const PlaceDetail = () => {
         </Button>
 
         <div className="absolute top-20 right-4 flex items-center gap-2">
-          <Badge className="bg-golden text-primary">Demo</Badge>
           <div className="flex items-center gap-1 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-soft">
             <Star className="w-4 h-4 fill-golden text-golden" />
             <span className="font-medium text-foreground">{place.rating.toFixed(1)}</span>
@@ -133,7 +129,7 @@ const PlaceDetail = () => {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full md:w-auto mb-6" onClick={showDemoNotice}>
+            <Button variant="outline" className="w-full md:w-auto mb-6" onClick={showGoogleMaps}>
               <MapPin className="w-4 h-4" />
               Open in Google Maps
               <ExternalLink className="w-4 h-4" />
@@ -192,29 +188,17 @@ const PlaceDetail = () => {
 
           <div className="bg-card rounded-2xl shadow-elevated p-4 md:p-6 h-fit">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-foreground">แผนที่ (Map)</h3>
-              <Badge variant="outline">Preview only</Badge>
+              <h3 className="font-medium text-foreground">แผนที่ตำแหน่งสถานที่ (Interactive Map)</h3>
+              <Badge variant="outline">Google Maps</Badge>
             </div>
-            <div className="demo-map h-[500px] w-full overflow-hidden rounded-xl border border-border relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-sky-100 via-emerald-50 to-amber-50" />
-              <div className="absolute inset-0 opacity-60 demo-map-grid" />
-              <div className="absolute left-[18%] top-0 h-full w-8 rotate-12 bg-white/80 shadow-sm" />
-              <div className="absolute left-0 top-[62%] h-10 w-full -rotate-6 bg-white/80 shadow-sm" />
-              <div className="absolute right-[12%] top-0 h-full w-20 bg-sky-300/50" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative">
-                  <span className="absolute -inset-5 rounded-full bg-primary/20 animate-ping" />
-                  <div className="relative w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-elevated flex items-center justify-center border-4 border-white">
-                    <MapPin className="w-7 h-7" />
-                  </div>
-                </div>
-              </div>
-              <div className="absolute left-4 bottom-4 right-4 rounded-xl bg-card/90 backdrop-blur p-3 shadow-soft">
-                <p className="font-medium">{place.nameTh}</p>
-                <p className="text-xs text-muted-foreground">
-                  {place.latitude}, {place.longitude} · แผนที่ตัวอย่าง
-                </p>
-              </div>
+            <div className="h-[500px] w-full overflow-hidden rounded-xl border border-border relative bg-muted">
+              <iframe
+                title={place.nameTh}
+                src={`https://maps.google.com/maps?q=${place.latitude},${place.longitude}&hl=th&z=15&output=embed`}
+                className="w-full h-full border-0 rounded-xl"
+                loading="lazy"
+                allowFullScreen
+              />
             </div>
           </div>
         </div>

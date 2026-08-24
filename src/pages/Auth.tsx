@@ -116,15 +116,11 @@ const AuthPage = () => {
               ระบบใหม่
             </Badge>
             <div className="space-y-4">
-              <p className="text-sm uppercase tracking-[0.3em] text-primary font-semibold flex items-center gap-2">
-                <Sparkles className="w-4 h-4" /> Demo Login
-              </p>
               <h1 className="text-3xl sm:text-4xl font-bold leading-tight">
-                ล็อคอินกับ Demo NongPlatoo.Ai
+                ล็อคอินกับ NongPlatoo.Ai
               </h1>
               <p className="text-muted-foreground text-lg leading-relaxed">
-                ตัวอย่างหน้าระบบสมาชิกของ NongPlatoo.Ai สำหรับใช้สาธิตการออกแบบ
-                โดยไม่มีการส่งหรือบันทึกข้อมูลผู้ใช้งาน
+                หน้าระบบสมาชิกของ NongPlatoo.Ai
               </p>
             </div>
 

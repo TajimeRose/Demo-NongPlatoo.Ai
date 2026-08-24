@@ -85,10 +85,7 @@ const Navbar = () => {
                 isScrolled || !isHomePage ? "text-foreground" : "text-primary-foreground"
               )}
             >
-              Demo NongPlatoo.Ai
-            </span>
-            <span className="rounded-full bg-golden/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-              Demo
+              NongPlatoo.Ai
             </span>
           </Link>
 
